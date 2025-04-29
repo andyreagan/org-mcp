@@ -1,5 +1,5 @@
 #+CREATED: [2025-04-29 Tue 10:20]
-#+UPDATED: [2025-04-29 Tue 10:54]
+#+UPDATED: [2025-04-29 Tue 12:57]
 * org-mcp
 
 A python-based MCP server for your local org mode files.

@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "org-mcp"
 version = "0.1.0"
 description = "A python-based MCP server for your local org mode files"
-readme = {file = "README.org", content-type = "text/plain"}
+readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.11"
 authors = [
     {name = "Andy Reagan", email = "andy@andyreagan.com"}
