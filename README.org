@@ -1,0 +1,68 @@
+#+CREATED: [2025-04-29 Tue 10:20]
+#+UPDATED: [2025-04-29 Tue 10:54]
+* org-mcp
+
+A python-based MCP server for your local org mode files.
+Allows access to your org notes, agenda, and TODOs.
+
+#+HTML: <a href="https://github.com/andyreagan/org-mcp/actions/workflows/python-test-publish.yml"><img src="https://github.com/andyreagan/org-mcp/actions/workflows/python-test-publish.yml/badge.svg" alt="Tests"></a> <a href="https://badge.fury.io/py/org-mcp"><img src="https://badge.fury.io/py/org-mcp.svg" alt="PyPI version"></a>
+
+** Tools
+
+- List org files
+- Read file headings
+- Read specific heading in file
+- Read whole file
+- Search for documents matching a specified text query across all files in the
+  vault (including the ID link), returns matching files/headings
+- Add new file
+- Add new heading to existing file  
+- Read agenda and TODOs from org's =M-x org-agenda n=
+- Modify heading
+
+** Example prompt
+
+- What does my day look like today?
+- What are the most important things for me to work on right now?
+- Based on my long term career and personal goals, what suggestions would a
+  coach give me? E.g., reprioritizing open TODOs, specific actions to take.
+
+** Adding to Claude Desktop
+
+In general, follow the instructions from Anthropic.
+
+For development:
+
+#+begin_src 
+{
+  "mcpServers": {
+    "org-mcp": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "<dir_to>/org-mcp",
+        "run",
+        "org-mcp"
+      ]
+    }
+  }
+}
+#+end_src
+
+To use the published version
+
+#+begin_src 
+{
+  "mcpServers": {
+    "org-mcp": {
+      "command": "uvx",
+      "args": [
+        "org-mcp"
+      ],
+      "env": {
+        "ORG_DIR" : "<YOUR_ORG_DIR>"
+      }
+    }
+  }
+}
+#+end_src
