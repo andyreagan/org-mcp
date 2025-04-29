@@ -10,7 +10,8 @@ import pytest
 from org_mcp.server import (
     list_org_files, list_org_files_tool, read_org_file, get_org_dir,
     extract_headings, read_file_headings, read_heading, search_org_files,
-    add_org_file, add_heading, modify_heading, get_org_agenda
+    add_org_file, add_heading, modify_heading, get_org_agenda, 
+    get_org_todos, get_org_schedule, extract_scheduled_items
 )
 
 
@@ -252,8 +253,81 @@ Content for heading 2
                 assert "Content for heading 2" in content
 
 
+def test_extract_scheduled_items():
+    """Test extract_scheduled_items function."""
+    org_content = """* Task with Schedule
+SCHEDULED: <2025-05-01 Thu>
+Some description
+
+* Task with Deadline
+DEADLINE: <2025-05-15 Thu>
+Some description
+
+* Task with both
+SCHEDULED: <2025-05-02 Fri> DEADLINE: <2025-05-20 Tue>
+Some description
+"""
+    items = extract_scheduled_items(org_content)
+    
+    assert len(items) == 4  # 2 scheduled + 2 deadline
+    
+    scheduled_items = [item for item in items if item["type"] == "scheduled"]
+    deadline_items = [item for item in items if item["type"] == "deadline"]
+    
+    assert len(scheduled_items) == 2
+    assert len(deadline_items) == 2
+    
+    assert "2025-05-01" in [item["date"] for item in scheduled_items]
+    assert "2025-05-02" in [item["date"] for item in scheduled_items]
+    assert "2025-05-15" in [item["date"] for item in deadline_items]
+    assert "2025-05-20" in [item["date"] for item in deadline_items]
+
+
 def test_get_org_agenda():
     """Test get_org_agenda function."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Create test org files with some TODO items and scheduled items
+        file1 = pathlib.Path(temp_dir) / "test1.org"
+        file1.write_text("""* TODO Task 1
+SCHEDULED: <2025-05-01 Thu>
+Some description
+
+* DONE Completed task
+""")
+        
+        file2 = pathlib.Path(temp_dir) / "test2.org"
+        file2.write_text("""* Regular heading
+        
+* TODO Task 2
+DEADLINE: <2025-05-15 Thu>
+Priority task
+""")
+        
+        with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
+            # Mock the emacs calls to fail so we use the fallback parsing
+            with mock.patch("org_mcp.server.run_org_agenda_command", 
+                           return_value="Error: Emacs not found"):
+                result = get_org_agenda()
+                
+                # Check that we got both todos and scheduled items
+                assert "todos" in result
+                assert "scheduled" in result
+                
+                # Check TODOs
+                assert len(result["todos"]) == 2
+                task_titles = [task["heading"] for task in result["todos"]]
+                assert "Task 1" in task_titles
+                assert "Task 2" in task_titles
+                
+                # Check scheduled items
+                assert len(result["scheduled"]) == 2
+                scheduled_types = [item["type"] for item in result["scheduled"]]
+                assert "scheduled" in scheduled_types
+                assert "deadline" in scheduled_types
+
+
+def test_get_org_todos():
+    """Test get_org_todos function."""
     with tempfile.TemporaryDirectory() as temp_dir:
         # Create test org files with some TODO items
         file1 = pathlib.Path(temp_dir) / "test1.org"
@@ -272,9 +346,9 @@ Priority task
         
         with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
             # Mock the emacs call to fail so we use the fallback parsing
-            with mock.patch("org_mcp.server.run_org_agenda", 
+            with mock.patch("org_mcp.server.run_org_agenda_command", 
                            return_value="Error: Emacs not found"):
-                result = get_org_agenda()
+                result = get_org_todos()
                 
                 assert "todos" in result
                 assert len(result["todos"]) == 2
@@ -284,3 +358,39 @@ Priority task
                 assert "Task 1" in task_titles
                 assert "Task 2" in task_titles
                 assert "Completed task" not in task_titles  # This is DONE
+
+
+def test_get_org_schedule():
+    """Test get_org_schedule function."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Create test org files with some scheduled items
+        file1 = pathlib.Path(temp_dir) / "test1.org"
+        file1.write_text("""* Task 1
+SCHEDULED: <2025-05-01 Thu>
+Some description
+""")
+        
+        file2 = pathlib.Path(temp_dir) / "test2.org"
+        file2.write_text("""* Task 2
+DEADLINE: <2025-05-15 Thu>
+Some description
+""")
+        
+        with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
+            # Mock the emacs call to fail so we use the fallback parsing
+            with mock.patch("org_mcp.server.run_org_agenda_command", 
+                           return_value="Error: Emacs not found"):
+                result = get_org_schedule()
+                
+                assert "scheduled" in result
+                assert len(result["scheduled"]) == 2
+                
+                # Check scheduled items
+                scheduled_types = [item["type"] for item in result["scheduled"]]
+                assert "scheduled" in scheduled_types
+                assert "deadline" in scheduled_types
+                
+                # Verify dates
+                dates = [item["date"] for item in result["scheduled"]]
+                assert "2025-05-01" in dates
+                assert "2025-05-15" in dates

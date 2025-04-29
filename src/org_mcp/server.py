@@ -393,8 +393,14 @@ def modify_heading(file_path: str, heading_title: str, new_title: Optional[str] 
         return {"error": str(e)}
 
 
-def run_org_agenda() -> str:
-    """Run the org-agenda command and return the output.
+def run_org_agenda_command(command: str) -> str:
+    """Run an org-agenda command and return the output.
+    
+    Args:
+        command: The Emacs Lisp command to execute
+        
+    Returns:
+        Command output or error message
     
     This requires Emacs to be installed with org-mode configured.
     """
@@ -402,7 +408,7 @@ def run_org_agenda() -> str:
         # Command to run org-agenda in batch mode
         cmd = [
             "emacs", "--batch", 
-            "--eval", "(progn (require 'org) (org-agenda-list) (princ (buffer-string)))"
+            "--eval", f"(progn (require 'org) {command} (princ (buffer-string)))"
         ]
         
         # Run the command
@@ -420,48 +426,210 @@ def run_org_agenda() -> str:
         return "Error: Emacs not found. Please ensure Emacs is installed."
 
 
+def extract_scheduled_items(content: str) -> List[Dict[str, Any]]:
+    """Extract scheduled items from org content.
+    
+    Args:
+        content: Org file content
+        
+    Returns:
+        List of scheduled items with date and heading information
+    """
+    scheduled_items = []
+    
+    # First get all headings
+    headings = extract_headings(content)
+    
+    # Look for SCHEDULED: timestamps in heading content
+    scheduled_pattern = re.compile(r"SCHEDULED:\s*<(\d{4}-\d{2}-\d{2})(?: [^>]*)?>")
+    deadline_pattern = re.compile(r"DEADLINE:\s*<(\d{4}-\d{2}-\d{2})(?: [^>]*)?>")
+    
+    for heading in headings:
+        scheduled_match = scheduled_pattern.search(heading["content"])
+        deadline_match = deadline_pattern.search(heading["content"])
+        
+        if scheduled_match:
+            scheduled_date = scheduled_match.group(1)
+            scheduled_items.append({
+                "type": "scheduled",
+                "date": scheduled_date,
+                "title": heading["title"],
+                "todo_state": heading["todo_state"],
+                "level": heading["level"]
+            })
+        
+        if deadline_match:
+            deadline_date = deadline_match.group(1)
+            scheduled_items.append({
+                "type": "deadline",
+                "date": deadline_date,
+                "title": heading["title"],
+                "todo_state": heading["todo_state"],
+                "level": heading["level"]
+            })
+    
+    return scheduled_items
+
+
 @mcp.tool()
 def get_org_agenda() -> Dict[str, Any]:
-    """Get the org agenda for today from org-agenda command.
+    """Get the org agenda for today, including schedule and TODOs.
     
     Returns:
-        Dictionary with agenda information
+        Dictionary with agenda information including schedule and TODOs
     """
     try:
-        agenda_output = run_org_agenda()
+        # First try using Emacs for full agenda functionality
+        agenda_output = run_org_agenda_command("(org-agenda-list)")
+        todo_output = run_org_agenda_command("(org-todo-list)")
         
-        if agenda_output.startswith("Error"):
+        if agenda_output.startswith("Error") or todo_output.startswith("Error"):
             # Manual parsing fallback if org-agenda command fails
             org_dir = get_org_dir()
             path = pathlib.Path(org_dir)
-            today_todos = []
+            todos = []
+            scheduled_items = []
             
             org_files = list(path.glob("**/*.org"))
             for file in org_files:
                 rel_path = str(file.relative_to(path))
                 
-                with open(file, "r", encoding="utf-8") as f:
-                    content = f.read()
-                
-                headings = extract_headings(content)
-                for heading in headings:
-                    if heading["todo_state"] in ["TODO", "IN-PROGRESS"]:
-                        today_todos.append({
-                            "file": rel_path,
-                            "heading": heading["title"],
-                            "state": heading["todo_state"]
-                        })
+                try:
+                    with open(file, "r", encoding="utf-8") as f:
+                        content = f.read()
+                    
+                    # Parse headings
+                    headings = extract_headings(content)
+                    
+                    # Get TODOs
+                    for heading in headings:
+                        if heading["todo_state"] in ["TODO", "IN-PROGRESS"]:
+                            todos.append({
+                                "file": rel_path,
+                                "heading": heading["title"],
+                                "state": heading["todo_state"]
+                            })
+                    
+                    # Get scheduled items
+                    items = extract_scheduled_items(content)
+                    for item in items:
+                        item["file"] = rel_path
+                        scheduled_items.append(item)
+                except Exception:
+                    continue  # Skip files with errors
+            
+            # Sort scheduled items by date
+            scheduled_items.sort(key=lambda x: x["date"])
             
             return {
                 "source": "manual_parsing",
                 "message": "Used manual parsing fallback",
-                "todos": today_todos
+                "todos": todos,
+                "scheduled": scheduled_items
             }
         else:
-            # Parse the output from org-agenda
+            # Return the output from both org-agenda commands
             return {
                 "source": "org_agenda_command",
-                "agenda": agenda_output
+                "agenda": agenda_output,
+                "todos": todo_output
+            }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@mcp.tool()
+def get_org_todos() -> Dict[str, Any]:
+    """Get all TODO items from org files.
+    
+    Returns:
+        Dictionary with TODO information
+    """
+    try:
+        # First try using Emacs for full functionality
+        todo_output = run_org_agenda_command("(org-todo-list)")
+        
+        if todo_output.startswith("Error"):
+            # Manual parsing fallback
+            org_dir = get_org_dir()
+            path = pathlib.Path(org_dir)
+            todos = []
+            
+            org_files = list(path.glob("**/*.org"))
+            for file in org_files:
+                rel_path = str(file.relative_to(path))
+                
+                try:
+                    with open(file, "r", encoding="utf-8") as f:
+                        content = f.read()
+                    
+                    headings = extract_headings(content)
+                    for heading in headings:
+                        if heading["todo_state"] in ["TODO", "IN-PROGRESS"]:
+                            todos.append({
+                                "file": rel_path,
+                                "heading": heading["title"],
+                                "state": heading["todo_state"]
+                            })
+                except Exception:
+                    continue
+            
+            return {
+                "source": "manual_parsing",
+                "todos": todos
+            }
+        else:
+            return {
+                "source": "org_agenda_command",
+                "todos": todo_output
+            }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@mcp.tool()
+def get_org_schedule() -> Dict[str, Any]:
+    """Get scheduled items and deadlines from org files.
+    
+    Returns:
+        Dictionary with scheduled items
+    """
+    try:
+        # First try using Emacs
+        schedule_output = run_org_agenda_command("(org-agenda-list)")
+        
+        if schedule_output.startswith("Error"):
+            # Manual parsing fallback
+            org_dir = get_org_dir()
+            path = pathlib.Path(org_dir)
+            scheduled_items = []
+            
+            org_files = list(path.glob("**/*.org"))
+            for file in org_files:
+                rel_path = str(file.relative_to(path))
+                
+                try:
+                    with open(file, "r", encoding="utf-8") as f:
+                        content = f.read()
+                    
+                    items = extract_scheduled_items(content)
+                    for item in items:
+                        item["file"] = rel_path
+                        scheduled_items.append(item)
+                except Exception:
+                    continue
+            
+            # Sort by date
+            scheduled_items.sort(key=lambda x: x["date"])
+            
+            return {
+                "source": "manual_parsing",
+                "scheduled": scheduled_items
+            }
+        else:
+            return {
+                "source": "org_agenda_command",
+                "schedule": schedule_output
             }
     except Exception as e:
         return {"error": str(e)}
@@ -476,7 +644,8 @@ I can help you access and work with your org-mode files. Here are some things yo
 - List all your org files
 - Read a specific org file or heading
 - Search for content in your org files
-- Summarize your TODOs and agenda
+- View your agenda with scheduled items and deadlines
+- See all your TODO items
 - Add new files or headings
 - Modify existing headings
 
@@ -485,6 +654,8 @@ Examples:
 - "What are the most important things for me to work on right now?"
 - "Show me all my TODO items related to 'project X'"
 - "Create a new heading in my notes.org file"
+- "Show me my schedule for this week"
+- "What deadlines do I have coming up?"
     """
 
 
