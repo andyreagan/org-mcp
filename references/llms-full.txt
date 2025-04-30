@@ -2529,7 +2529,7 @@ Here's how to define tools with annotations for different scenarios:
     )
     async def calculate_sum(a: float, b: float) -> str:
         """Add two numbers together.
-        
+
         Args:
             a: First number to add
             b: Second number to add
@@ -6189,7 +6189,7 @@ This tutorial will primarily focus on tools.
         ```groovy
         dependencies {
           implementation platform("org.springframework.ai:spring-ai-starter-mcp-server")
-          implementation platform("org.springframework:spring-web")   
+          implementation platform("org.springframework:spring-web")
         }
         ```
       </Tab>
@@ -6247,7 +6247,7 @@ This tutorial will primarily focus on tools.
           // - Wind speed and direction
           // - Detailed forecast description
       }
-    	
+
       @Tool(description = "Get weather alerts for a US state")
       public String getAlerts(
           @ToolParam(description = "Two-letter US state code (e.g. CA, NY)" String state
@@ -7474,7 +7474,7 @@ The client provides both synchronous and asynchronous APIs for flexibility in di
 
     // Call a tool
     CallToolResult result = client.callTool(
-        new CallToolRequest("calculator", 
+        new CallToolRequest("calculator",
             Map.of("operation", "add", "a", 2, "b", 3))
     );
 
@@ -7525,13 +7525,13 @@ The client provides both synchronous and asynchronous APIs for flexibility in di
         .flatMap(initResult -> client.listTools())
         .flatMap(tools -> {
             return client.callTool(new CallToolRequest(
-                "calculator", 
+                "calculator",
                 Map.of("operation", "add", "a", 2, "b", 3)
             ));
         })
         .flatMap(result -> {
             return client.listResources()
-                .flatMap(resources -> 
+                .flatMap(resources ->
                     client.readResource(new ReadResourceRequest("resource://uri"))
                 );
         })
@@ -7539,14 +7539,14 @@ The client provides both synchronous and asynchronous APIs for flexibility in di
             return client.listPrompts()
                 .flatMap(prompts ->
                     client.getPrompt(new GetPromptRequest(
-                        "greeting", 
+                        "greeting",
                         Map.of("name", "Spring")
                     ))
                 );
         })
         .flatMap(prompt -> {
             return client.addRoot(new Root("file:///path", "description"))
-                .then(client.removeRoot("file:///path"));            
+                .then(client.removeRoot("file:///path"));
         })
         .doFinally(signalType -> {
             client.closeGracefully().subscribe();
@@ -7698,7 +7698,7 @@ Tools are server-side functions that clients can discover and execute. The MCP c
     ```java
     // List available tools asynchronously
     client.listTools()
-        .doOnNext(tools -> tools.forEach(tool -> 
+        .doOnNext(tools -> tools.forEach(tool ->
             System.out.println(tool.getName())))
         .subscribe();
 
@@ -7735,7 +7735,7 @@ Resources represent server-side data sources that clients can access using URI t
     ```java
     // List available resources asynchronously
     client.listResources()
-        .doOnNext(resources -> resources.forEach(resource -> 
+        .doOnNext(resources -> resources.forEach(resource ->
             System.out.println(resource.getName())))
         .subscribe();
 
@@ -7770,7 +7770,7 @@ The prompt system enables interaction with server-side prompt templates. These t
     ```java
     // List available prompt templates asynchronously
     client.listPrompts()
-        .doOnNext(prompts -> prompts.forEach(prompt -> 
+        .doOnNext(prompts -> prompts.forEach(prompt ->
             System.out.println(prompt.getName())))
         .subscribe();
 
@@ -8424,12 +8424,12 @@ As part of the [Completion capabilities](/specification/2025-03-26/server/utilit
     // Sync completion specification
     var syncCompletionSpecification = new McpServerFeatures.SyncCompletionSpecification(
     			new McpSchema.PromptReference("code_review"), (exchange, request) -> {
-            
+
             // completion implementation ...
-            
+
             return new McpSchema.CompleteResult(
                 new CompleteResult.CompleteCompletion(
-                  List.of("python", "pytorch", "pyside"), 
+                  List.of("python", "pytorch", "pyside"),
                   10, // total
                   false // hasMore
                 ));
@@ -8460,7 +8460,7 @@ As part of the [Completion capabilities](/specification/2025-03-26/server/utilit
 
             return Mono.just(new McpSchema.CompleteResult(
                 new CompleteResult.CompleteCompletion(
-                  List.of("python", "pytorch", "pyside"), 
+                  List.of("python", "pytorch", "pyside"),
                   10, // total
                   false // hasMore
                 )));
@@ -8512,7 +8512,7 @@ Once connected to a compatible client, the server can request language model gen
             if (exchange.getClientCapabilities().sampling() == null) {
                 return new CallToolResult("Client does not support AI capabilities", false);
             }
-            
+
             // Create a sampling request
             McpSchema.CreateMessageRequest request = McpSchema.CreateMessageRequest.builder()
                 .messages(List.of(new McpSchema.SamplingMessage(McpSchema.Role.USER,
@@ -8528,10 +8528,10 @@ Once connected to a compatible client, the server can request language model gen
                 .systemPrompt("You are a helpful calculator assistant. Provide only the numerical answer.")
                 .maxTokens(100)
                 .build();
-            
+
             // Request sampling from the client
             McpSchema.CreateMessageResult result = exchange.createMessage(request);
-            
+
             // Process the result
             String answer = result.content().text();
             return new CallToolResult(answer, false);
@@ -8558,7 +8558,7 @@ Once connected to a compatible client, the server can request language model gen
             if (exchange.getClientCapabilities().sampling() == null) {
                 return Mono.just(new CallToolResult("Client does not support AI capabilities", false));
             }
-            
+
             // Create a sampling request
             McpSchema.CreateMessageRequest request = McpSchema.CreateMessageRequest.builder()
                 .content(new McpSchema.TextContent("Calculate: " + arguments.get("expression")))
@@ -8573,7 +8573,7 @@ Once connected to a compatible client, the server can request language model gen
                 .systemPrompt("You are a helpful calculator assistant. Provide only the numerical answer.")
                 .maxTokens(100)
                 .build();
-            
+
             // Request sampling from the client
             return exchange.createMessage(request)
                 .map(result -> {
@@ -8623,7 +8623,7 @@ The server can send log messages using the `McpAsyncServerExchange`/`McpSyncServ
 ```java
 var tool = new McpServerFeatures.AsyncToolSpecification(
     new McpSchema.Tool("logging-test", "Test logging notifications", emptyJsonSchema),
-    (exchange, request) -> {  
+    (exchange, request) -> {
 
       exchange.loggingNotification( // Use the exchange to send log messages
           McpSchema.LoggingMessageNotification.builder()
@@ -18412,5 +18412,3 @@ After Claude helps you build your server:
 Remember that Claude can help you modify and improve your server as requirements change over time.
 
 Need more guidance? Just ask Claude specific questions about implementing MCP features or troubleshooting issues that arise.
-
-

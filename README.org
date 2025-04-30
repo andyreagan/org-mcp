@@ -16,7 +16,7 @@ Allows access to your org notes, agenda, and TODOs.
 - Search for documents matching a specified text query across all files in the
   vault (including the ID link), returns matching files/headings
 - Add new file
-- Add new heading to existing file  
+- Add new heading to existing file
 - Read agenda and TODOs from org's =M-x org-agenda n=
 - Modify heading
 
@@ -33,7 +33,7 @@ In general, follow the instructions from Anthropic.
 
 For development:
 
-#+begin_src 
+#+begin_src
 {
   "mcpServers": {
     "org-mcp": {
@@ -51,7 +51,7 @@ For development:
 
 To use the published version
 
-#+begin_src 
+#+begin_src
 {
   "mcpServers": {
     "org-mcp": {

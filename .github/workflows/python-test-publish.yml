@@ -34,7 +34,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python
@@ -47,7 +47,7 @@ jobs:
         pip install build twine
     - name: Generate README.md from README.org
       run: |
-        python scripts/generate_readme_md.py        
+        python scripts/generate_readme_md.py
     - name: Build and publish
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
