@@ -328,13 +328,11 @@ def modify_heading(
 
         headings = extract_headings(content)
         target_heading = None
-        heading_index = -1
 
         # Find the target heading
         for i, heading in enumerate(headings):
             if heading["title"] == heading_title:
                 target_heading = heading
-                heading_index = i
                 break
 
         if not target_heading:

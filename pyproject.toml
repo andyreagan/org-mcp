@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "org-mcp"
-version = "0.3.1"
+version = "0.3.2"
 description = "A python-based MCP server for your local org mode files"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.10"
