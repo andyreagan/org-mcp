@@ -116,14 +116,12 @@ def test_read_file_headings():
     with tempfile.TemporaryDirectory() as temp_dir:
         # Create a test org file with content
         test_file = pathlib.Path(temp_dir) / "test.org"
-        test_file.write_text(
-            """* Heading 1
+        test_file.write_text("""* Heading 1
 Content for heading 1
 
 * TODO Heading 2
 Content for heading 2
-"""
-        )
+""")
 
         with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
             result = read_file_headings("test.org")
@@ -139,14 +137,12 @@ def test_read_heading():
     with tempfile.TemporaryDirectory() as temp_dir:
         # Create a test org file with content
         test_file = pathlib.Path(temp_dir) / "test.org"
-        test_file.write_text(
-            """* Heading 1
+        test_file.write_text("""* Heading 1
 Content for heading 1
 
 * TODO Heading 2
 Content for heading 2
-"""
-        )
+""")
 
         with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
             result = read_heading("test.org", "Heading 2")
@@ -165,24 +161,20 @@ def test_search_org_files():
     with tempfile.TemporaryDirectory() as temp_dir:
         # Create test org files with content
         file1 = pathlib.Path(temp_dir) / "test1.org"
-        file1.write_text(
-            """* Project X
+        file1.write_text("""* Project X
 Some content about Project X
 
 ** TODO Task for Project X
 Need to complete this task
-"""
-        )
+""")
 
         file2 = pathlib.Path(temp_dir) / "test2.org"
-        file2.write_text(
-            """* Project Y
+        file2.write_text("""* Project Y
 Some content about Project Y
 
 ** Meeting notes
 Discussed Project X briefly
-"""
-        )
+""")
 
         with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
             result = search_org_files("Project X")
@@ -248,14 +240,12 @@ def test_modify_heading():
     with tempfile.TemporaryDirectory() as temp_dir:
         # Create a test org file with content
         test_file = pathlib.Path(temp_dir) / "test.org"
-        test_file.write_text(
-            """* Heading 1
+        test_file.write_text("""* Heading 1
 Content for heading 1
 
 * TODO Heading 2
 Content for heading 2
-"""
-        )
+""")
 
         with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
             # Modify a heading
@@ -309,24 +299,20 @@ def test_get_org_agenda():
     with tempfile.TemporaryDirectory() as temp_dir:
         # Create test org files with some TODO items and scheduled items
         file1 = pathlib.Path(temp_dir) / "test1.org"
-        file1.write_text(
-            """* TODO Task 1
+        file1.write_text("""* TODO Task 1
 SCHEDULED: <2025-05-01 Thu>
 Some description
 
 * DONE Completed task
-"""
-        )
+""")
 
         file2 = pathlib.Path(temp_dir) / "test2.org"
-        file2.write_text(
-            """* Regular heading
+        file2.write_text("""* Regular heading
 
 * TODO Task 2
 DEADLINE: <2025-05-15 Thu>
 Priority task
-"""
-        )
+""")
 
         with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
             # Mock the emacs calls to fail so we use the fallback parsing
@@ -357,22 +343,18 @@ def test_get_org_todos():
     with tempfile.TemporaryDirectory() as temp_dir:
         # Create test org files with some TODO items
         file1 = pathlib.Path(temp_dir) / "test1.org"
-        file1.write_text(
-            """* TODO Task 1
+        file1.write_text("""* TODO Task 1
 Some description
 
 * DONE Completed task
-"""
-        )
+""")
 
         file2 = pathlib.Path(temp_dir) / "test2.org"
-        file2.write_text(
-            """* Regular heading
+        file2.write_text("""* Regular heading
 
 * TODO Task 2
 Priority task
-"""
-        )
+""")
 
         with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
             # Mock the emacs call to fail so we use the fallback parsing
@@ -396,20 +378,16 @@ def test_get_org_schedule():
     with tempfile.TemporaryDirectory() as temp_dir:
         # Create test org files with some scheduled items
         file1 = pathlib.Path(temp_dir) / "test1.org"
-        file1.write_text(
-            """* Task 1
+        file1.write_text("""* Task 1
 SCHEDULED: <2025-05-01 Thu>
 Some description
-"""
-        )
+""")
 
         file2 = pathlib.Path(temp_dir) / "test2.org"
-        file2.write_text(
-            """* Task 2
+        file2.write_text("""* Task 2
 DEADLINE: <2025-05-15 Thu>
 Some description
-"""
-        )
+""")
 
         with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
             # Mock the emacs call to fail so we use the fallback parsing
