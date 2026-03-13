@@ -1,30 +1,36 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "org-mcp"
 version = "0.3.0"
 description = "A python-based MCP server for your local org mode files"
-readme = {file = "README.md", content-type = "text/markdown"}
-requires-python = ">=3.11"
+readme = {file = "README.org", content-type = "text/plain"}
+requires-python = ">=3.10"
 authors = [
     {name = "Andy Reagan", email = "andy@andyreagan.com"}
 ]
 dependencies = [
     "mcp[cli]>=1.6.0",
-    "pytest>=8.3.5",
+    "pyjwt<2.12.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/andyreagan/org-mcp"
+Repository = "https://github.com/andyreagan/org-mcp"
+Issues = "https://github.com/andyreagan/org-mcp/issues"
 
 [project.scripts]
 org-mcp = "org_mcp.cli:main"
 
-[tool.setuptools]
-package-dir = {"" = "src"}
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-exclude = ["references*"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/org_mcp"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
