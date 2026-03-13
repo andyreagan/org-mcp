@@ -11,5 +11,4 @@ __pycache__/
 \#*\#
 
 # Testing
-uv.lock
 .python-version
