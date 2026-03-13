@@ -8,7 +8,10 @@ __pycache__/
 
 # Editors
 *~
+\#*\#
+
+# Generated
+README.md
 
 # Testing
-uv.lock
 .python-version
