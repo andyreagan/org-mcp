@@ -39,6 +39,10 @@ jobs:
       uses: astral-sh/setup-uv@v5
     - name: Install Python
       run: uv python install 3.13
+    - name: Generate README.md from README.org
+      uses: docker://pandoc/core:3.5
+      with:
+        args: "-t markdown -f org -o README.md README.org"
     - name: Build
       run: uvx build
     - name: Publish to PyPI
