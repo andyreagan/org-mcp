@@ -5,7 +5,11 @@
 A python-based MCP server for your local org mode files.
 Allows access to your org notes, agenda, and TODOs.
 
-#+HTML: <a href="https://github.com/andyreagan/org-mcp/actions/workflows/python-test-publish.yml"><img src="https://github.com/andyreagan/org-mcp/actions/workflows/python-test-publish.yml/badge.svg" alt="Tests"></a> <a href="https://badge.fury.io/py/org-mcp"><img src="https://badge.fury.io/py/org-mcp.svg" alt="PyPI version"></a>
+That said, you probably want [org-cli](https://github.com/andyreagan/org-cli) instead.
+I'll continue providing maintainence updates here,
+but am only actively developing on [org-cli](https://github.com/andyreagan/org-cli).
+
+#+HTML: <a href="https://github.com/andyreagan/org-mcp/actions/workflows/ci.yml"><img src="https://github.com/andyreagan/org-mcp/actions/workflows/ci.yml/badge.svg" alt="Tests"></a> <a href="https://badge.fury.io/py/org-mcp"><img src="https://badge.fury.io/py/org-mcp.svg" alt="PyPI version"></a>
 
 ** Tools
 
