@@ -1,15 +1,18 @@
 """MCP server for org-mode files."""
 
+import logging
 import os
 import pathlib
 import re
 import subprocess
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
+
+logger = logging.getLogger(__name__)
 
 # Create an MCP server
-mcp = FastMCP("org-mcp")
+mcp = MCPServer("org-mcp")
 
 
 def get_org_dir() -> str:
@@ -31,7 +34,7 @@ def list_org_files() -> str:
 
         files_info = [f"- {file.relative_to(path)}" for file in org_files]
         return f"Org files in {org_dir}:\n\n" + "\n".join(files_info)
-    except Exception as e:
+    except OSError as e:
         return f"Error accessing org files: {e!s}"
 
 
@@ -44,7 +47,7 @@ def list_org_files_tool() -> list[dict[str, str]]:
     try:
         org_files = list(path.glob("**/*.org"))
         return [{"path": str(file.relative_to(path)), "full_path": str(file)} for file in org_files]
-    except Exception as e:
+    except OSError as e:
         return [{"error": str(e)}]
 
 
@@ -62,7 +65,7 @@ def read_org_file(file_path: str) -> str:
         with open(full_path, encoding="utf-8") as f:
             content = f.read()
         return content
-    except Exception as e:
+    except (OSError, UnicodeDecodeError) as e:
         return f"Error reading file: {e!s}"
 
 
@@ -208,11 +211,12 @@ def search_org_files(query: str) -> list[dict[str, Any]]:
                     matches.append(
                         {"file_path": rel_path, "matches_in_headings": found_in_headings}
                     )
-            except Exception:
-                continue  # Skip files with errors
+            except (OSError, UnicodeDecodeError):
+                logger.warning("Skipping unreadable org file: %s", rel_path, exc_info=True)
+                continue
 
         return matches
-    except Exception as e:
+    except OSError as e:
         return [{"error": str(e)}]
 
 
@@ -243,7 +247,7 @@ def add_org_file(file_path: str, content: str = "") -> dict[str, str]:
             f.write(content)
 
         return {"status": "success", "message": f"Created new file: {file_path}"}
-    except Exception as e:
+    except OSError as e:
         return {"error": str(e)}
 
 
@@ -290,7 +294,7 @@ def add_heading(
             f.write(new_content)
 
         return {"status": "success", "message": f"Added new heading '{title}' to {file_path}"}
-    except Exception as e:
+    except (OSError, UnicodeDecodeError) as e:
         return {"error": str(e)}
 
 
@@ -363,14 +367,15 @@ def modify_heading(
 
         for i, line in enumerate(lines):
             match = heading_pattern.match(line)
-            if match and match.group(2).endswith(heading_title):
-                if (
-                    match.group(2) == heading_title
-                    or match.group(2).startswith("TODO ")
-                    or match.group(2).startswith("DONE ")
-                ):
-                    line_number = i
-                    break
+            if (
+                match
+                and match.group(2).endswith(heading_title)
+                and (
+                    match.group(2) == heading_title or match.group(2).startswith(("TODO ", "DONE "))
+                )
+            ):
+                line_number = i
+                break
 
         if line_number == -1:
             return {"error": f"Heading line not found for '{heading_title}' in {file_path}"}
@@ -395,7 +400,7 @@ def modify_heading(
             "status": "success",
             "message": f"Modified heading '{heading_title}' in {file_path}",
         }
-    except Exception as e:
+    except (OSError, UnicodeDecodeError) as e:
         return {"error": str(e)}
 
 
@@ -524,8 +529,9 @@ def get_org_agenda() -> dict[str, Any]:
                     for item in items:
                         item["file"] = rel_path
                         scheduled_items.append(item)
-                except Exception:
-                    continue  # Skip files with errors
+                except (OSError, UnicodeDecodeError):
+                    logger.warning("Skipping unreadable org file: %s", rel_path, exc_info=True)
+                    continue
 
             # Sort scheduled items by date
             scheduled_items.sort(key=lambda x: x["date"])
@@ -539,7 +545,7 @@ def get_org_agenda() -> dict[str, Any]:
         else:
             # Return the output from both org-agenda commands
             return {"source": "org_agenda_command", "agenda": agenda_output, "todos": todo_output}
-    except Exception as e:
+    except OSError as e:
         return {"error": str(e)}
 
 
@@ -578,13 +584,14 @@ def get_org_todos() -> dict[str, Any]:
                                     "state": heading["todo_state"],
                                 }
                             )
-                except Exception:
+                except (OSError, UnicodeDecodeError):
+                    logger.warning("Skipping unreadable org file: %s", rel_path, exc_info=True)
                     continue
 
             return {"source": "manual_parsing", "todos": todos}
         else:
             return {"source": "org_agenda_command", "todos": todo_output}
-    except Exception as e:
+    except OSError as e:
         return {"error": str(e)}
 
 
@@ -617,7 +624,8 @@ def get_org_schedule() -> dict[str, Any]:
                     for item in items:
                         item["file"] = rel_path
                         scheduled_items.append(item)
-                except Exception:
+                except (OSError, UnicodeDecodeError):
+                    logger.warning("Skipping unreadable org file: %s", rel_path, exc_info=True)
                     continue
 
             # Sort by date
@@ -626,7 +634,7 @@ def get_org_schedule() -> dict[str, Any]:
             return {"source": "manual_parsing", "scheduled": scheduled_items}
         else:
             return {"source": "org_agenda_command", "schedule": schedule_output}
-    except Exception as e:
+    except OSError as e:
         return {"error": str(e)}
 
 

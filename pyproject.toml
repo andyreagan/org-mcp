@@ -12,7 +12,7 @@ authors = [
     {name = "Andy Reagan", email = "andy@andyreagan.com"}
 ]
 dependencies = [
-    "mcp[cli]>=1.6.0",
+    "mcp[cli]>=2.0.0",
 ]
 
 [project.urls]

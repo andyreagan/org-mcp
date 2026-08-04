@@ -32,10 +32,12 @@ def test_get_org_dir_with_env():
 
 def test_get_org_dir_default():
     """Test get_org_dir default."""
-    with mock.patch.dict(os.environ, clear=True):
-        with mock.patch("os.path.expanduser") as mock_expanduser:
-            mock_expanduser.return_value = "/home/user/org"
-            assert get_org_dir() == "/home/user/org"
+    with (
+        mock.patch.dict(os.environ, clear=True),
+        mock.patch("os.path.expanduser") as mock_expanduser,
+    ):
+        mock_expanduser.return_value = "/home/user/org"
+        assert get_org_dir() == "/home/user/org"
 
 
 def test_list_org_files():
@@ -193,22 +195,24 @@ Discussed Project X briefly
 
 def test_add_org_file():
     """Test add_org_file function."""
-    with tempfile.TemporaryDirectory() as temp_dir:
-        with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
-            # Add a new file
-            result = add_org_file("new_file.org", "* Test Content")
+    with (
+        tempfile.TemporaryDirectory() as temp_dir,
+        mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir),
+    ):
+        # Add a new file
+        result = add_org_file("new_file.org", "* Test Content")
 
-            assert result["status"] == "success"
-            assert os.path.exists(os.path.join(temp_dir, "new_file.org"))
+        assert result["status"] == "success"
+        assert os.path.exists(os.path.join(temp_dir, "new_file.org"))
 
-            # Read the file to verify content
-            with open(os.path.join(temp_dir, "new_file.org")) as f:
-                content = f.read()
-                assert content == "* Test Content"
+        # Read the file to verify content
+        with open(os.path.join(temp_dir, "new_file.org")) as f:
+            content = f.read()
+            assert content == "* Test Content"
 
-            # Try to add the same file again (should fail)
-            error_result = add_org_file("new_file.org")
-            assert "error" in error_result
+        # Try to add the same file again (should fail)
+        error_result = add_org_file("new_file.org")
+        assert "error" in error_result
 
 
 def test_add_heading():
@@ -313,28 +317,30 @@ DEADLINE: <2025-05-15 Thu>
 Priority task
 """)
 
-        with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
-            # Mock the emacs calls to fail so we use the fallback parsing
-            with mock.patch(
+        # Mock the emacs calls to fail so we use the fallback parsing
+        with (
+            mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir),
+            mock.patch(
                 "org_mcp.server.run_org_agenda_command", return_value="Error: Emacs not found"
-            ):
-                result = get_org_agenda()
+            ),
+        ):
+            result = get_org_agenda()
 
-                # Check that we got both todos and scheduled items
-                assert "todos" in result
-                assert "scheduled" in result
+            # Check that we got both todos and scheduled items
+            assert "todos" in result
+            assert "scheduled" in result
 
-                # Check TODOs
-                assert len(result["todos"]) == 2
-                task_titles = [task["heading"] for task in result["todos"]]
-                assert "Task 1" in task_titles
-                assert "Task 2" in task_titles
+            # Check TODOs
+            assert len(result["todos"]) == 2
+            task_titles = [task["heading"] for task in result["todos"]]
+            assert "Task 1" in task_titles
+            assert "Task 2" in task_titles
 
-                # Check scheduled items
-                assert len(result["scheduled"]) == 2
-                scheduled_types = [item["type"] for item in result["scheduled"]]
-                assert "scheduled" in scheduled_types
-                assert "deadline" in scheduled_types
+            # Check scheduled items
+            assert len(result["scheduled"]) == 2
+            scheduled_types = [item["type"] for item in result["scheduled"]]
+            assert "scheduled" in scheduled_types
+            assert "deadline" in scheduled_types
 
 
 def test_get_org_todos():
@@ -355,21 +361,23 @@ Some description
 Priority task
 """)
 
-        with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
-            # Mock the emacs call to fail so we use the fallback parsing
-            with mock.patch(
+        # Mock the emacs call to fail so we use the fallback parsing
+        with (
+            mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir),
+            mock.patch(
                 "org_mcp.server.run_org_agenda_command", return_value="Error: Emacs not found"
-            ):
-                result = get_org_todos()
+            ),
+        ):
+            result = get_org_todos()
 
-                assert "todos" in result
-                assert len(result["todos"]) == 2
+            assert "todos" in result
+            assert len(result["todos"]) == 2
 
-                # Check that we found all the TODO items
-                task_titles = [task["heading"] for task in result["todos"]]
-                assert "Task 1" in task_titles
-                assert "Task 2" in task_titles
-                assert "Completed task" not in task_titles  # This is DONE
+            # Check that we found all the TODO items
+            task_titles = [task["heading"] for task in result["todos"]]
+            assert "Task 1" in task_titles
+            assert "Task 2" in task_titles
+            assert "Completed task" not in task_titles  # This is DONE
 
 
 def test_get_org_schedule():
@@ -388,22 +396,24 @@ DEADLINE: <2025-05-15 Thu>
 Some description
 """)
 
-        with mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir):
-            # Mock the emacs call to fail so we use the fallback parsing
-            with mock.patch(
+        # Mock the emacs call to fail so we use the fallback parsing
+        with (
+            mock.patch("org_mcp.server.get_org_dir", return_value=temp_dir),
+            mock.patch(
                 "org_mcp.server.run_org_agenda_command", return_value="Error: Emacs not found"
-            ):
-                result = get_org_schedule()
+            ),
+        ):
+            result = get_org_schedule()
 
-                assert "scheduled" in result
-                assert len(result["scheduled"]) == 2
+            assert "scheduled" in result
+            assert len(result["scheduled"]) == 2
 
-                # Check scheduled items
-                scheduled_types = [item["type"] for item in result["scheduled"]]
-                assert "scheduled" in scheduled_types
-                assert "deadline" in scheduled_types
+            # Check scheduled items
+            scheduled_types = [item["type"] for item in result["scheduled"]]
+            assert "scheduled" in scheduled_types
+            assert "deadline" in scheduled_types
 
-                # Verify dates
-                dates = [item["date"] for item in result["scheduled"]]
-                assert "2025-05-01" in dates
-                assert "2025-05-15" in dates
+            # Verify dates
+            dates = [item["date"] for item in result["scheduled"]]
+            assert "2025-05-01" in dates
+            assert "2025-05-15" in dates

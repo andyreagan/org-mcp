@@ -22,7 +22,7 @@ def main():
     try:
         mcp.run()
         return 0
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - top-level CLI boundary: report and exit non-zero
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
