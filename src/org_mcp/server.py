@@ -32,7 +32,7 @@ def list_org_files() -> str:
         files_info = [f"- {file.relative_to(path)}" for file in org_files]
         return f"Org files in {org_dir}:\n\n" + "\n".join(files_info)
     except Exception as e:
-        return f"Error accessing org files: {str(e)}"
+        return f"Error accessing org files: {e!s}"
 
 
 @mcp.tool()
@@ -63,7 +63,7 @@ def read_org_file(file_path: str) -> str:
             content = f.read()
         return content
     except Exception as e:
-        return f"Error reading file: {str(e)}"
+        return f"Error reading file: {e!s}"
 
 
 def extract_headings(content: str) -> list[dict[str, Any]]:
