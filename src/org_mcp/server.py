@@ -6,10 +6,10 @@ import re
 import subprocess
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 # Create an MCP server
-mcp = FastMCP("org-mcp")
+mcp = MCPServer("org-mcp")
 
 
 def get_org_dir() -> str:

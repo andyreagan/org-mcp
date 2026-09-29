@@ -419,7 +419,7 @@ wheels = [
 
 [[package]]
 name = "org-mcp"
-version = "0.3.2"
+version = "0.3.3"
 source = { editable = "." }
 dependencies = [
     { name = "mcp", extra = ["cli"] },
@@ -431,7 +431,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "mcp", extras = ["cli"], specifier = ">=1.6.0" }]
+requires-dist = [{ name = "mcp", extras = ["cli"], specifier = ">=2.0.0" }]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=8.3.5" }]
