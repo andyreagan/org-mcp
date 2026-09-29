@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "org-mcp"
-version = "0.3.2"
+version = "0.3.3"
 description = "A python-based MCP server for your local org mode files"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.10"
@@ -12,7 +12,7 @@ authors = [
     {name = "Andy Reagan", email = "andy@andyreagan.com"}
 ]
 dependencies = [
-    "mcp[cli]>=1.6.0",
+    "mcp[cli]>=2.0.0",
 ]
 
 [project.urls]
@@ -33,3 +33,8 @@ packages = ["src/org_mcp"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff.lint]
+# Pin to the pre-ruff-0.16 default rule set. Ruff 0.16 expanded its defaults
+# from ~60 to ~400 rules; opting into the wider set is a separate decision.
+select = ["E4", "E7", "E9", "F"]
